@@ -1,0 +1,119 @@
+### ═══════════════════════════════════════════════════
+### Hackathon API Test Suite — REST Client (VS Code)
+### Click "Send Request" above any request to test
+### ═══════════════════════════════════════════════════
+
+@BASE    = http://localhost:8000
+@API_KEY = hackathon-secret-key-123
+
+### ── System ──────────────────────────────────────────
+
+### Health Check
+GET {{BASE}}/health
+
+### Swagger Docs (open in browser)
+# GET {{BASE}}/docs
+
+### ── AI Endpoints ────────────────────────────────────
+
+### Chat — with domain context
+POST {{BASE}}/api/ai/chat
+X-API-Key: {{API_KEY}}
+Content-Type: application/json
+
+{
+  "prompt": "Show me all offline devices and explain possible reasons",
+  "include_context": true
+}
+
+###
+
+### Chat — without context (pure LLM)
+POST {{BASE}}/api/ai/chat
+X-API-Key: {{API_KEY}}
+Content-Type: application/json
+
+{
+  "prompt": "What is MQTT protocol?",
+  "include_context": false
+}
+
+###
+
+### Feedback — thumbs up
+POST {{BASE}}/api/ai/feedback
+X-API-Key: {{API_KEY}}
+Content-Type: application/json
+
+{
+  "response_id": "REPLACE_WITH_ACTUAL_ID",
+  "rating": 1
+}
+
+###
+
+### Feedback — thumbs down
+POST {{BASE}}/api/ai/feedback
+X-API-Key: {{API_KEY}}
+Content-Type: application/json
+
+{
+  "response_id": "REPLACE_WITH_ACTUAL_ID",
+  "rating": -1
+}
+
+###
+
+### Translate
+POST {{BASE}}/api/ai/translate
+X-API-Key: {{API_KEY}}
+Content-Type: application/json
+
+{
+  "text": "Device is offline. Check network connection.",
+  "target_lang": "hi-IN"
+}
+
+### ── Data Endpoints ───────────────────────────────────
+
+### List all entities
+GET {{BASE}}/api/data/entities
+X-API-Key: {{API_KEY}}
+
+###
+
+### Get entity by ID
+GET {{BASE}}/api/data/entities/dev_001
+X-API-Key: {{API_KEY}}
+
+###
+
+### Filter by status
+GET {{BASE}}/api/data/entities/status/offline
+X-API-Key: {{API_KEY}}
+
+###
+
+### Get alerts
+GET {{BASE}}/api/data/alerts
+X-API-Key: {{API_KEY}}
+
+###
+
+### Chat history
+GET {{BASE}}/api/data/history
+X-API-Key: {{API_KEY}}
+
+### ── Sarvam Direct (test your API key) ───────────────
+
+### Direct Sarvam Chat (bypass your app)
+POST https://api.sarvam.ai/v1/chat/completions
+api-subscription-key: YOUR_SARVAM_KEY_HERE
+Content-Type: application/json
+
+{
+  "model": "sarvam-2b",
+  "messages": [
+    {"role": "user", "content": "Hello, what can you do?"}
+  ]
+}
