@@ -1,4 +1,4 @@
-# 🚀 Hackathon AI Starter
+# 🚀 Quick AI Development Starter 
 
 > GenAI skeleton — swap domain in 30 minutes, not 3 hours.
 
@@ -11,7 +11,7 @@
 # 2. Copy env file
 cp .env.example .env
 
-# 3. Add your Sarvam API key to .env
+# 3. Add your LLM API key to .env
 
 # 4. Run
 ./start.sh
@@ -25,7 +25,7 @@ Or press **F5** in VS Code (venv must exist first).
 
 ---
 
-## On Hackathon Day — 3 Files to Change
+##  — 3 Files to Change as per the problem statement
 
 | File | What to Change | Time |
 |---|---|---|
@@ -51,7 +51,7 @@ hackathon-starter/
 │   └── data.py           # /api/data/* — entities, alerts, history
 │
 ├── services/
-│   ├── sarvam.py         # Sarvam AI wrapper — do not touch
+│   ├── LLM.py         # LLM AI wrapper — do not touch
 │   ├── mock_data.py      # ✏️ CHANGE THIS per problem
 │   └── database.py       # SQLite — do not touch
 │
@@ -75,10 +75,10 @@ hackathon-starter/
 
 | Method | Path | Description |
 |---|---|---|
-| GET | `/health` | System + Sarvam status |
+| GET | `/health` | System + LLM status |
 | POST | `/api/ai/chat` | LLM chat with domain context |
 | POST | `/api/ai/feedback` | 👍👎 feedback (judging criteria) |
-| POST | `/api/ai/translate` | Sarvam translation |
+| POST | `/api/ai/translate` | LLM translation |
 | GET | `/api/data/entities` | All domain entities |
 | GET | `/api/data/entities/{id}` | Single entity |
 | GET | `/api/data/entities/status/{s}` | Filter by status |
@@ -105,7 +105,7 @@ All `/api/*` routes require `X-API-Key` header.
 | Criterion | How it's covered |
 |---|---|
 | Working prototype | FastAPI + React running out of box |
-| Sarvam AI integration | `services/sarvam.py` wraps all APIs |
+| LLM AI integration | `services/LLM.py` wraps all APIs |
 | Feedback mechanism | `/api/ai/feedback` + 👍👎 in UI |
 | Security | API key auth + .env secrets |
 | UI / usability | Responsive React chat interface |
