@@ -2,70 +2,134 @@
 services/sarvam.py
 ─────────────────
 Wrapper around Sarvam AI APIs.
-On hackathon day: only change the system prompt — nothing else.
+Compatible with latest Sarvam API format.
 """
 
 import httpx
 from config import SARVAM_API_KEY, SARVAM_BASE_URL, SARVAM_MODEL
 
 HEADERS = {
-    "api-subscription-key": SARVAM_API_KEY,
+    "Authorization": f"Bearer {SARVAM_API_KEY}",
     "Content-Type": "application/json",
 }
 
+
 # ── LLM Chat ─────────────────────────────────────────────────────────────────
-async def chat(prompt: str, system: str = "You are a helpful assistant.") -> str:
+async def chat(
+    prompt: str,
+    system: str = "You are a helpful assistant.",
+    temperature: float = 0.7,
+    max_tokens: int = 2000,
+) -> str:
     """
-    Core LLM call. Inject domain context via `system` param.
-    Change system prompt per problem — everything else stays same.
+    Core LLM call using latest Sarvam Chat Completions API.
     """
+
+    payload = {
+        "model": SARVAM_MODEL,
+        "messages": [
+            {
+                "role": "system",
+                "content": system,
+            },
+            {
+                "role": "user",
+                "content": prompt,
+            },
+        ],
+        "temperature": temperature,
+        "max_tokens": max_tokens,
+    }
+
     async with httpx.AsyncClient(timeout=30) as client:
-        resp = await client.post(
+        response = await client.post(
             f"{SARVAM_BASE_URL}/v1/chat/completions",
             headers=HEADERS,
-            json={
-                "model": SARVAM_MODEL,
-                "messages": [
-                    {"role": "system", "content": system},
-                    {"role": "user",   "content": prompt},
-                ],
-            },
+            json=payload,
         )
-        resp.raise_for_status()
-        return resp.json()["choices"][0]["message"]["content"]
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        return data["choices"][0]["message"]["content"]
 
 
 # ── Translation ───────────────────────────────────────────────────────────────
-async def translate(text: str, target_lang: str = "hi-IN") -> str:
-    """Translate text to target language. Useful for multilingual problem statements."""
+async def translate(
+    text: str,
+    target_lang: str = "hi-IN",
+    source_lang: str = "auto",
+) -> str:
+    """
+    Translate text to target language.
+    """
+
+    payload = {
+        "input": text,
+        "source_language_code": source_lang,
+        "target_language_code": target_lang,
+    }
+
     async with httpx.AsyncClient(timeout=15) as client:
-        resp = await client.post(
+        response = await client.post(
             f"{SARVAM_BASE_URL}/translate",
             headers=HEADERS,
-            json={"input": text, "target_language_code": target_lang},
+            json=payload,
         )
-        resp.raise_for_status()
-        return resp.json().get("translated_text", text)
+
+        response.raise_for_status()
+
+        data = response.json()
+
+        return data.get("translated_text", text)
 
 
 # ── Text to Speech ────────────────────────────────────────────────────────────
-async def text_to_speech(text: str, lang: str = "en-IN") -> bytes:
-    """Returns audio bytes. Useful if problem needs voice output."""
-    async with httpx.AsyncClient(timeout=20) as client:
-        resp = await client.post(
+async def text_to_speech(
+    text: str,
+    lang: str = "en-IN",
+    speaker: str = "meera",
+) -> bytes:
+    """
+    Convert text to speech.
+    Returns raw audio bytes.
+    """
+
+    payload = {
+        "inputs": [text],
+        "target_language_code": lang,
+        "speaker": speaker,
+    }
+
+    async with httpx.AsyncClient(timeout=30) as client:
+        response = await client.post(
             f"{SARVAM_BASE_URL}/text-to-speech",
             headers=HEADERS,
-            json={"input": text, "target_language_code": lang},
+            json=payload,
         )
-        resp.raise_for_status()
-        return resp.content
+
+        response.raise_for_status()
+
+        return response.content
 
 
 # ── Health Check ──────────────────────────────────────────────────────────────
 async def sarvam_health() -> bool:
-    """Ping Sarvam to verify API key works. Call at startup."""
+    """
+    Verify Sarvam API connectivity.
+    """
+
     try:
-        result = await chat("ping", "Reply with: pong")
-        return bool(result)
-    except Exception:
+        result = await chat(
+            prompt="ping",
+            system="Reply only with pong",
+            temperature=0,
+            max_tokens=1000,
+        )
+
+        return "pong" in result.lower()
+
+    except Exception as e:
+        print(f"Sarvam health check failed: {e}")
         return False
