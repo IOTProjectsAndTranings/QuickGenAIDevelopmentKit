@@ -1,9 +1,12 @@
 """
 main.py
 ───────
-FastAPI application entry point.
-Run with: uvicorn main:app --reload
-Or press F5 in VS Code.
+FastAPI application with:
+  - Rate limiting middleware
+  - API key authentication
+  - CORS
+  - Static frontend serving
+  - Startup health checks
 """
 
 from fastapi import FastAPI, Depends, HTTPException, Security
@@ -18,32 +21,37 @@ from models.schemas import HealthResponse
 from routers import ai, data
 from services.sarvam import sarvam_health
 from services.database import init_db
+from services.rate_limiter import RateLimitMiddleware
+import services.cache as cache
 
 
-# ── Startup / Shutdown ────────────────────────────────────────────────────────
 @asynccontextmanager
 async def lifespan(app: FastAPI):
-    print("🚀 Starting up...")
+    print("🚀 Starting Hackathon AI App...")
     await init_db()
     sarvam_ok = await sarvam_health()
-    print(f"✅ DB initialized")
-    print(f"{'✅' if sarvam_ok else '❌'} Sarvam AI: {'connected' if sarvam_ok else 'NOT connected — check API key'}")
+    print("✅ Database initialized")
+    print(f"{'✅' if sarvam_ok else '❌'} Sarvam AI: {'connected' if sarvam_ok else 'NOT connected — check SARVAM_API_KEY'}")
+    print(f"✅ Rate limiting: 30 req/min per IP")
+    print(f"✅ Response cache: 5 min TTL")
+    print(f"✅ MCP tools: {5} tools registered")
+    print(f"📖 Swagger: http://localhost:8000/docs")
     yield
     print("🔴 Shutting down...")
 
 
-# ── App ───────────────────────────────────────────────────────────────────────
 app = FastAPI(
     title=APP_TITLE,
-    description="Hackathon GenAI Starter — swap mock_data.py per problem",
-    version="1.0.0",
+    description="Hackathon GenAI Starter — MCP tools, cache, rate limiting, fallback",
+    version="2.0.0",
     lifespan=lifespan,
 )
 
-# ── CORS ──────────────────────────────────────────────────────────────────────
+# ── Middleware (order matters — rate limit before CORS) ───────────────────────
+app.add_middleware(RateLimitMiddleware)
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],   # tighten to localhost in prod
+    allow_origins=["*"],
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -60,7 +68,7 @@ async def verify_key(key: str = Security(api_key_header)):
 app.include_router(ai.router,   prefix="/api/ai",   dependencies=[Depends(verify_key)])
 app.include_router(data.router, prefix="/api/data", dependencies=[Depends(verify_key)])
 
-# ── Frontend static serving ───────────────────────────────────────────────────
+# ── Frontend ──────────────────────────────────────────────────────────────────
 app.mount("/static", StaticFiles(directory="frontend"), name="static")
 
 @app.get("/", include_in_schema=False)
@@ -74,5 +82,5 @@ async def health_check():
     return HealthResponse(
         status="ok",
         sarvam_connected=sarvam_ok,
-        env=APP_ENV
+        env=APP_ENV,
     )
