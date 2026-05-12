@@ -1,4 +1,4 @@
-# 🚀 Quick GenAI Development Kit ( Tested in Python 3.10)
+# 🚀 Quick GenAI Chatbot Development Kit ( Tested in Python 3.10)
 
 
 ---
