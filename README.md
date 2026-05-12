@@ -1,7 +1,5 @@
-# 🚀 Quick GenAI Development Kit — Final
+# 🚀 Quick GenAI Development Kit
 
-> GenAI skeleton — swap domain in 30 minutes, not 3 hours.
-> Based on: https://github.com/IOTProjectsAndTranings/QuickGenAIDevelopmentKit
 
 ---
 
@@ -18,7 +16,7 @@ cp .env.example .env          # Add SARVAM_API_KEY and APP_API_KEY
 
 ---
 
-## On Hackathon Day — 3 Files to Change
+##  3 Files to Change as per your Problem statement
 
 | File | What to change | Time |
 |---|---|---|
@@ -26,42 +24,6 @@ cp .env.example .env          # Add SARVAM_API_KEY and APP_API_KEY
 | `routers/ai.py` | Update `DOMAIN_NAME` + system prompt | 5 min |
 | `frontend/index.html` | Update `APP_TITLE` + quick prompts | 5 min |
 
-**Everything else stays identical.**
-
----
-
-## Project Structure
-
-```
-QuickGenAIDevelopmentKit/
-├── main.py                     # FastAPI entry — do not touch
-├── config.py                   # Settings from .env — do not touch
-├── requirements.txt
-├── start.sh
-│
-├── services/
-│   ├── LLM.py                  # LLM wrapper (Sarvam AI) — do not touch
-│   ├── mcp_tools.py            # ✏️ Tool definitions — swap per problem
-│   ├── mock_data.py            # ✏️ Domain data — swap per problem
-│   ├── rag.py                  # RAG engine (BM25) — do not touch
-│   ├── cache.py                # Response cache — do not touch
-│   ├── rate_limiter.py         # Rate limiting — do not touch
-│   └── database.py             # SQLite — do not touch
-│
-├── routers/
-│   ├── ai.py                   # ✏️ AI routes — update DOMAIN_NAME
-│   ├── data.py                 # Data routes
-│   └── rag.py                  # RAG routes — do not touch
-│
-├── models/schemas.py           # Pydantic models
-├── frontend/index.html         # React chat UI with RAG toggle
-├── db/                         # SQLite DB lives here (auto-created)
-├── tests/api.http              # VS Code REST client tests
-├── architecture/diagram.html   # Architecture diagram
-└── presentation/               # Phase 2 PPT template
-```
-
----
 
 ## LLM Configuration (from repo)
 
@@ -111,31 +73,7 @@ Upload domain documents → they get chunked and indexed → LLM retrieves relev
 
 All `/api/*` routes require `X-API-Key` header.
 
----
 
-## What Was Fixed (v2 → Final)
-
-| # | Issue | Fix |
-|---|---|---|
-| Repo | `sarvam.py` → `LLM.py` | Provider-agnostic naming |
-| Repo | Base URL `→ /v1` endpoint | Correct Sarvam API URL |
-| Repo | Model `→ sarvam-30b` | Upgraded model |
-| Repo | `db/` folder in repo | DB directory tracked |
-| C1 | `[cached]` in UI | `cache_hit: bool` flag + 💾 badge |
-| C2 | Route conflict | `/by-status/` before `/{id}` |
-| C3 | Dead import | Removed unused `build_llm_context` |
-| C4 | None API key | Raises `ValueError` at startup |
-| H1 | Health burns credits | 60s cached health result |
-| H2 | Double function calls | Store in variable first |
-| H3 | `rating=0` allowed | `Literal[-1, 1]` type |
-| H4 | No `response_id` check | `response_id_exists()` validates |
-| H5 | Unlimited history | `Query(le=100)` max |
-| H6 | IoT text in prompt | Removed domain-specific line |
-| M1–M7 | Medium issues | All fixed |
-| L1–L7 | Low issues | All fixed |
-| NEW | RAG feature | BM25 retrieval, toggleable per-message |
-
----
 
 ## Security Checklist
 
@@ -151,15 +89,4 @@ All `/api/*` routes require `X-API-Key` header.
 
 ---
 
-## Google Drive Submission Structure
 
-```
-/Hackathon_TeamName/
-├── code/
-│   └── QuickGenAIDevelopmentKit.zip   (this project)
-├── presentation/
-│   └── Hackathon_Phase2.pptx
-├── demo/
-│   └── demo_video.mp4                 (optional)
-└── README.txt                         (team name, members, problem chosen)
-```
