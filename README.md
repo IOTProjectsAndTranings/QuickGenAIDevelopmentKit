@@ -1,4 +1,4 @@
-# 🚀 Quick GenAI Development Kit
+# 🚀 Quick GenAI Development Kit ( Tested in Python 3.10)
 
 
 ---
@@ -9,6 +9,20 @@
 cp .env.example .env          # Add SARVAM_API_KEY and APP_API_KEY
 ./start.sh                    # One command — installs deps & runs
 ```
+---
+## Run the app in power shell
+
+Steps to run the code power shell
+------------------------
+1. python -m venv venv
+2. .\venv\Scripts\Activate.ps1
+3. pip install -r .\requirements.txt
+4. Set Env variables
+    $env:SARVAM_API_KEY="xxxxx"
+  $env:APP_API_KEY="hackathon-secret-key-123"
+5. uvicorn main:app --reload --port 8000
+
+---
 
 - App UI:     http://localhost:8000
 - Swagger:    http://localhost:8000/docs
