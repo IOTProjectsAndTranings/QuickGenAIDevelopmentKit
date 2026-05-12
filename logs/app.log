@@ -1,0 +1,96 @@
+2026-05-12 20:19:19,621 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 20:19:19,633 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 20:19:19,633 [INFO] services.rag: RAG index cleared (no documents)
+2026-05-12 20:19:21,274 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:19:21,274 [INFO] main: Sarvam AI: connected
+2026-05-12 20:19:21,274 [INFO] main: Rate limiting: active
+2026-05-12 20:19:21,274 [INFO] main: RAG: enabled
+2026-05-12 20:19:21,274 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 20:22:59,063 [INFO] main: Shutting down.
+2026-05-12 20:23:33,449 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 20:23:33,456 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 20:23:33,456 [INFO] services.rag: RAG index cleared (no documents)
+2026-05-12 20:23:35,434 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:23:35,434 [INFO] main: Sarvam AI: connected
+2026-05-12 20:23:35,434 [INFO] main: Rate limiting: active
+2026-05-12 20:23:35,434 [INFO] main: RAG: enabled
+2026-05-12 20:23:35,434 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 20:24:49,839 [INFO] main: Shutting down.
+2026-05-12 20:24:51,719 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 20:24:51,719 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 20:24:51,723 [INFO] services.rag: RAG index cleared (no documents)
+2026-05-12 20:24:54,824 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:24:54,825 [INFO] main: Sarvam AI: connected
+2026-05-12 20:24:54,825 [INFO] main: Rate limiting: active
+2026-05-12 20:24:54,825 [INFO] main: RAG: enabled
+2026-05-12 20:24:54,825 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 20:25:03,573 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:25:04,426 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:25:12,008 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:25:14,313 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:25:27,397 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:25:27,899 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:25:37,840 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:25:38,934 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:25:59,502 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:26:01,186 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:26:09,839 [INFO] services.rag: RAG globally disabled
+2026-05-12 20:29:05,444 [INFO] services.database: Saved RAG document 'football' with 2 chunks
+2026-05-12 20:29:05,448 [INFO] services.rag: RAG index built: 2 chunks across 91 unique terms
+2026-05-12 20:29:13,988 [INFO] services.rag: RAG globally enabled
+2026-05-12 20:29:29,703 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:51:56,944 [INFO] main: Shutting down.
+2026-05-12 20:52:28,357 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 20:52:28,357 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 20:52:28,364 [INFO] services.rag: RAG index built: 2 chunks across 91 unique terms
+2026-05-12 20:52:31,053 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:52:31,053 [INFO] main: Sarvam AI: connected
+2026-05-12 20:52:31,053 [INFO] main: Rate limiting: active
+2026-05-12 20:52:31,053 [INFO] main: RAG: enabled
+2026-05-12 20:52:31,053 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 20:56:10,513 [INFO] main: Shutting down.
+2026-05-12 20:56:14,760 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 20:56:14,760 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 20:56:14,760 [INFO] services.rag: RAG index built: 2 chunks across 91 unique terms
+2026-05-12 20:56:19,789 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 20:56:19,795 [INFO] main: Sarvam AI: connected
+2026-05-12 20:56:19,795 [INFO] main: Rate limiting: active
+2026-05-12 20:56:19,795 [INFO] main: RAG: enabled
+2026-05-12 20:56:19,795 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 21:00:19,237 [INFO] main: Shutting down.
+2026-05-12 21:00:22,911 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 21:00:22,911 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 21:00:22,911 [INFO] services.rag: RAG index built: 2 chunks across 91 unique terms
+2026-05-12 21:00:24,848 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 21:00:24,850 [INFO] main: Sarvam AI: connected
+2026-05-12 21:00:24,850 [INFO] main: Rate limiting: active
+2026-05-12 21:00:24,850 [INFO] main: RAG: enabled
+2026-05-12 21:00:24,850 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 21:05:01,571 [INFO] main: Shutting down.
+2026-05-12 21:05:02,432 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 21:05:02,432 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 21:05:02,439 [INFO] services.rag: RAG index built: 2 chunks across 91 unique terms
+2026-05-12 21:05:04,724 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 21:05:04,724 [INFO] main: Sarvam AI: connected
+2026-05-12 21:05:04,724 [INFO] main: Rate limiting: active
+2026-05-12 21:05:04,724 [INFO] main: RAG: enabled
+2026-05-12 21:05:04,724 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 21:05:22,740 [INFO] main: Shutting down.
+2026-05-12 21:05:32,267 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 21:05:32,269 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 21:05:32,273 [INFO] services.rag: RAG index built: 2 chunks across 91 unique terms
+2026-05-12 21:05:34,422 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 21:05:34,425 [INFO] main: Sarvam AI: connected
+2026-05-12 21:05:34,425 [INFO] main: Rate limiting: active
+2026-05-12 21:05:34,425 [INFO] main: RAG: enabled
+2026-05-12 21:05:34,425 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 21:06:46,967 [INFO] main: Shutting down.
+2026-05-12 21:06:49,115 [INFO] main: Starting Hackathon AI App ...
+2026-05-12 21:06:49,115 [INFO] services.database: Database initialized at db/hackathon.db
+2026-05-12 21:06:49,115 [INFO] services.rag: RAG index built: 2 chunks across 91 unique terms
+2026-05-12 21:06:51,743 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"
+2026-05-12 21:06:51,743 [INFO] main: Sarvam AI: connected
+2026-05-12 21:06:51,743 [INFO] main: Rate limiting: active
+2026-05-12 21:06:51,743 [INFO] main: RAG: enabled
+2026-05-12 21:06:51,743 [INFO] main: Swagger docs: http://localhost:8000/docs
+2026-05-12 21:07:27,063 [INFO] httpx: HTTP Request: POST https://api.sarvam.ai/v1/chat/completions "HTTP/1.1 200 OK"

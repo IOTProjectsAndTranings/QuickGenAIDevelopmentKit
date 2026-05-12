@@ -1,14 +1,11 @@
 """
 services/mock_data.py
 ─────────────────────
-⚠️  ON HACKATHON DAY — this is the ONLY file you swap domain data in.
-Change DOMAIN_ENTITIES to match your problem statement.
-Everything else (API, LLM, Frontend) stays identical.
+⚠️  ON HACKATHON DAY — this is the ONLY file to swap domain data in.
+Change DOMAIN_ENTITIES and ALERTS to match your problem statement.
 
-Examples:
-  Problem = HR Bot       → entities = employees, departments, leave records
-  Problem = Supply Chain → entities = products, warehouses, shipments
-  Problem = IoT          → entities = devices, sensors, alerts  (DEFAULT BELOW)
+Fixes applied:
+  - M4: Status comparison is now case-insensitive
 """
 
 from typing import List, Dict, Any
@@ -40,7 +37,8 @@ def get_entity_by_id(entity_id: str) -> Dict | None:
 
 
 def get_entities_by_status(status: str) -> List[Dict]:
-    return [e for e in DOMAIN_ENTITIES if e["status"] == status]
+    # M4: case-insensitive comparison
+    return [e for e in DOMAIN_ENTITIES if e["status"].lower() == status.lower()]
 
 
 def get_alerts() -> List[Dict]:
@@ -48,10 +46,6 @@ def get_alerts() -> List[Dict]:
 
 
 def build_llm_context() -> str:
-    """
-    Builds a plain-English context string injected into the Sarvam system prompt.
-    LLM uses this to answer domain-specific questions.
-    """
     lines = []
     for e in DOMAIN_ENTITIES:
         val = f"{e['value']} {e['unit']}" if e["value"] is not None else "N/A"
@@ -59,8 +53,10 @@ def build_llm_context() -> str:
             f"- {e['name']} [{e['id']}]: status={e['status']}, "
             f"value={val}, protocol={e.get('protocol','?')}, location={e.get('location','?')}"
         )
-    alert_lines = [f"- ALERT [{a['severity'].upper()}]: {a['message']} (device: {a['device_id']})" for a in ALERTS]
-
+    alert_lines = [
+        f"- ALERT [{a['severity'].upper()}]: {a['message']} (device: {a['device_id']})"
+        for a in ALERTS
+    ]
     return (
         f"Domain: {DOMAIN_NAME}\n"
         f"Entities:\n" + "\n".join(lines) + "\n\n"

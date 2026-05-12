@@ -1,38 +1,40 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-  <meta charset="UTF-8" />
+  <meta charset="UTF-8"/>
   <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
   <title>Hackathon AI Assistant</title>
-  <script src="https://unpkg.com/react@18/umd/react.development.js"></script>
-  <script src="https://unpkg.com/react-dom@18/umd/react-dom.development.js"></script>
+  <!-- L7: production React builds -->
+  <script src="https://unpkg.com/react@18/umd/react.production.min.js"></script>
+  <script src="https://unpkg.com/react-dom@18/umd/react-dom.production.min.js"></script>
   <script src="https://unpkg.com/@babel/standalone/babel.min.js"></script>
   <script src="https://cdn.tailwindcss.com"></script>
   <link href="https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@400;600&family=Space+Grotesk:wght@400;600;700&display=swap" rel="stylesheet"/>
   <style>
-    * { box-sizing: border-box; }
-    body { margin: 0; font-family: 'Space Grotesk', sans-serif; background: #0b0f1a; color: #e2e8f0; }
-    ::-webkit-scrollbar { width: 6px; }
-    ::-webkit-scrollbar-track { background: #1a2035; }
-    ::-webkit-scrollbar-thumb { background: #3b82f6; border-radius: 3px; }
-    .mono { font-family: 'JetBrains Mono', monospace; }
-    @keyframes pulse-dot { 0%,100% { opacity:1; } 50% { opacity:0.3; } }
-    .pulse { animation: pulse-dot 1.2s ease-in-out infinite; }
-    @keyframes slide-in { from { opacity:0; transform: translateY(8px); } to { opacity:1; transform: translateY(0); } }
-    .slide-in { animation: slide-in 0.25s ease-out; }
+    *{box-sizing:border-box;}
+    body{margin:0;font-family:'Space Grotesk',sans-serif;background:#0b0f1a;color:#e2e8f0;}
+    ::-webkit-scrollbar{width:5px;}
+    ::-webkit-scrollbar-track{background:#1a2035;}
+    ::-webkit-scrollbar-thumb{background:#3b82f6;border-radius:3px;}
+    .mono{font-family:'JetBrains Mono',monospace;}
+    @keyframes pulse-dot{0%,100%{opacity:1;}50%{opacity:0.3;}}
+    .pulse{animation:pulse-dot 1.2s ease-in-out infinite;}
+    @keyframes slide-in{from{opacity:0;transform:translateY(6px);}to{opacity:1;transform:translateY(0);}}
+    .slide-in{animation:slide-in 0.22s ease-out;}
+    textarea:focus,input:focus{outline:none;}
   </style>
 </head>
 <body>
 <div id="root"></div>
 
 <script type="text/babel">
-// ── CONFIG — change API key to match your .env ────────────────────────────
-const BASE_URL   = "http://localhost:8000";
-const API_KEY    = "hackathon-secret-key-123";
-const APP_TITLE  = "IoT AI Assistant";   // ✏️ Change on hackathon day
-// ─────────────────────────────────────────────────────────────────────────
+// ── CONFIG ✏️ Change on hackathon day ────────────────────────────────────────
+const BASE_URL  = "http://localhost:8000";
+const API_KEY   = "hackathon-secret-key-123";  // must match APP_API_KEY in .env        // must match APP_API_KEY in .env
+const APP_TITLE = "IoT AI Assistant";
+// ─────────────────────────────────────────────────────────────────────────────
 
-const { useState, useEffect, useRef } = React;
+const { useState, useEffect, useRef, useCallback } = React;
 
 const api = async (path, method = "GET", body = null) => {
   const res = await fetch(`${BASE_URL}${path}`, {
@@ -40,33 +42,50 @@ const api = async (path, method = "GET", body = null) => {
     headers: { "Content-Type": "application/json", "X-API-Key": API_KEY },
     body: body ? JSON.stringify(body) : null,
   });
-  if (!res.ok) throw new Error(`API error ${res.status}`);
+  if (!res.ok) {
+    const err = await res.json().catch(() => ({ detail: res.statusText }));
+    throw new Error(err.detail || `HTTP ${res.status}`);
+  }
   return res.json();
 };
 
-// ── Status Badge ─────────────────────────────────────────────────────────────
+// ── Status badge ──────────────────────────────────────────────────────────────
 const Badge = ({ status }) => {
-  const colors = {
+  const c = {
     online:  "bg-emerald-500/20 text-emerald-400 border border-emerald-500/30",
     offline: "bg-red-500/20 text-red-400 border border-red-500/30",
     warning: "bg-amber-500/20 text-amber-400 border border-amber-500/30",
   };
-  return (
-    <span className={`px-2 py-0.5 rounded text-xs mono font-semibold ${colors[status] || colors.warning}`}>
-      {status}
-    </span>
-  );
+  return <span className={`px-2 py-0.5 rounded text-xs mono font-semibold ${c[status] || c.warning}`}>{status}</span>;
 };
 
-// ── Device / Entity Panel ─────────────────────────────────────────────────────
-const EntityPanel = () => {
+// ── Sidebar tab: Data ─────────────────────────────────────────────────────────
+const DataPanel = () => {
   const [entities, setEntities] = useState([]);
   const [alerts,   setAlerts]   = useState([]);
+  const [error,    setError]    = useState(null);   // L6: error state
 
-  useEffect(() => {
-    api("/api/data/entities").then(r => setEntities(r.data)).catch(() => {});
-    api("/api/data/alerts").then(r => setAlerts(r.data)).catch(() => {});
+  const load = useCallback(() => {
+    Promise.all([
+      api("/api/data/entities"),
+      api("/api/data/alerts"),
+    ]).then(([e, a]) => {
+      setEntities(e.data);
+      setAlerts(a.data);
+      setError(null);
+    }).catch(err => setError("Failed to load data: " + err.message));
   }, []);
+
+  useEffect(() => { load(); }, [load]);
+
+  if (error) return (
+    <div className="text-center py-6">
+      <p className="text-red-400 text-xs mb-3">{error}</p>
+      <button onClick={load} className="text-xs text-blue-400 border border-blue-500/30 px-3 py-1.5 rounded-lg hover:bg-blue-500/10">
+        Retry
+      </button>
+    </div>
+  );
 
   return (
     <div className="flex flex-col gap-3 h-full overflow-y-auto pr-1">
@@ -74,207 +93,418 @@ const EntityPanel = () => {
       {entities.map(e => (
         <div key={e.id} className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3 slide-in">
           <div className="flex items-center justify-between mb-1">
-            <span className="text-sm font-semibold text-slate-200 truncate">{e.name}</span>
-            <Badge status={e.status} />
+            <span className="text-sm font-semibold text-slate-200 truncate mr-2">{e.name}</span>
+            <Badge status={e.status}/>
           </div>
           <div className="flex gap-3 text-xs text-slate-400 mono mt-1">
             <span>{e.id}</span>
-            {e.value !== null && e.value !== undefined && (
-              <span className="text-blue-400">{e.value} {e.unit}</span>
-            )}
+            {e.value != null && <span className="text-blue-400">{e.value} {e.unit}</span>}
           </div>
           {e.protocol && <span className="text-xs text-slate-500">{e.protocol} · {e.location}</span>}
         </div>
       ))}
+      {alerts.length > 0 && <>
+        <p className="text-xs text-slate-500 uppercase tracking-widest mono mt-2">Alerts ({alerts.length})</p>
+        {alerts.map(a => (
+          <div key={a.id} className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 slide-in">
+            <div className="flex items-center gap-2 mb-1">
+              <span className="text-red-400 text-xs font-bold uppercase mono">{a.severity}</span>
+              <span className="text-xs text-slate-400 mono">{a.device_id}</span>
+            </div>
+            <p className="text-sm text-slate-300">{a.message}</p>
+          </div>
+        ))}
+      </>}
+    </div>
+  );
+};
 
-      {alerts.length > 0 && (
-        <>
-          <p className="text-xs text-slate-500 uppercase tracking-widest mono mt-2">Active Alerts ({alerts.length})</p>
-          {alerts.map(a => (
-            <div key={a.id} className="bg-red-900/20 border border-red-500/30 rounded-lg p-3 slide-in">
-              <div className="flex items-center gap-2 mb-1">
-                <span className="text-red-400 text-xs font-bold uppercase mono">{a.severity}</span>
-                <span className="text-xs text-slate-400 mono">{a.device_id}</span>
+// ── Sidebar tab: RAG ──────────────────────────────────────────────────────────
+const RagPanel = ({ ragEnabled, onToggle }) => {
+  const [docs,       setDocs]       = useState([]);
+  const [docName,    setDocName]    = useState("");
+  const [docContent, setDocContent] = useState("");
+  const [uploading,  setUploading]  = useState(false);
+  const [uploadMsg,  setUploadMsg]  = useState(null);
+  const [error,      setError]      = useState(null);
+  const [deleting,   setDeleting]   = useState(null);
+
+  const loadDocs = useCallback(() => {
+    api("/api/rag/documents").then(r => { setDocs(r.data); setError(null); })
+      .catch(err => setError("Failed to load docs: " + err.message));
+  }, []);
+
+  useEffect(() => { loadDocs(); }, [loadDocs]);
+
+  const upload = async () => {
+    if (!docName.trim() || !docContent.trim()) return;
+    setUploading(true);
+    setUploadMsg(null);
+    try {
+      const res = await api("/api/rag/upload", "POST", { name: docName.trim(), content: docContent.trim() });
+      setUploadMsg(`✅ Indexed ${res.chunks_created} chunks`);
+      setDocName("");
+      setDocContent("");
+      loadDocs();
+    } catch (e) {
+      setUploadMsg("❌ " + e.message);
+    } finally {
+      setUploading(false);
+    }
+  };
+
+  const deleteDoc = async (id) => {
+    setDeleting(id);
+    try {
+      await api(`/api/rag/documents/${id}`, "DELETE");
+      loadDocs();
+    } catch (e) {
+      setError("Delete failed: " + e.message);
+    } finally {
+      setDeleting(null);
+    }
+  };
+
+  return (
+    <div className="flex flex-col gap-4 h-full overflow-y-auto pr-1">
+      {/* Global toggle */}
+      <div className="bg-slate-800/60 border border-slate-700/50 rounded-lg p-3">
+        <div className="flex items-center justify-between">
+          <div>
+            <p className="text-sm font-semibold text-slate-200">Global RAG</p>
+            <p className="text-xs text-slate-500">Affects all chat sessions</p>
+          </div>
+          <button
+            onClick={onToggle}
+            className={`relative w-12 h-6 rounded-full transition-colors duration-200 ${ragEnabled ? "bg-blue-600" : "bg-slate-600"}`}>
+            <span className={`absolute top-0.5 w-5 h-5 bg-white rounded-full shadow transition-transform duration-200 ${ragEnabled ? "translate-x-6" : "translate-x-0.5"}`}/>
+          </button>
+        </div>
+        <p className={`text-xs mono mt-2 ${ragEnabled ? "text-emerald-400" : "text-slate-500"}`}>
+          {ragEnabled ? "● RAG active" : "○ RAG disabled"}
+        </p>
+      </div>
+
+      {/* Upload form */}
+      <div className="bg-slate-800/40 border border-slate-700/40 rounded-lg p-3">
+        <p className="text-xs text-slate-400 uppercase tracking-widest mono mb-3">Upload Document</p>
+        <input
+          className="w-full bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 text-sm text-slate-200 placeholder-slate-500 mb-2"
+          placeholder="Document name..."
+          value={docName}
+          onChange={e => setDocName(e.target.value)}
+        />
+        <textarea
+          className="w-full bg-slate-800 border border-slate-700/50 rounded-lg px-3 py-2 text-xs text-slate-200 placeholder-slate-500 resize-none"
+          rows={5}
+          placeholder="Paste document text here (PDF text, notes, domain knowledge)..."
+          value={docContent}
+          onChange={e => setDocContent(e.target.value)}
+        />
+        <button
+          onClick={upload}
+          disabled={uploading || !docName.trim() || !docContent.trim()}
+          className="mt-2 w-full bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-lg py-2 text-sm font-semibold transition">
+          {uploading ? "Indexing..." : "Upload & Index"}
+        </button>
+        {uploadMsg && <p className="text-xs mt-2 text-center text-slate-400">{uploadMsg}</p>}
+      </div>
+
+      {/* Doc list */}
+      {error && <p className="text-xs text-red-400">{error}</p>}
+      {docs.length > 0 && (
+        <div>
+          <p className="text-xs text-slate-500 uppercase tracking-widest mono mb-2">Indexed Docs ({docs.length})</p>
+          {docs.map(d => (
+            <div key={d.id} className="bg-slate-800/40 border border-slate-700/40 rounded-lg p-2.5 mb-2 flex items-center justify-between gap-2">
+              <div className="flex-1 min-w-0">
+                <p className="text-sm text-slate-200 truncate">{d.name}</p>
+                <p className="text-xs text-slate-500 mono">{d.chunk_count} chunks</p>
               </div>
-              <p className="text-sm text-slate-300">{a.message}</p>
+              <button
+                onClick={() => deleteDoc(d.id)}
+                disabled={deleting === d.id}
+                className="text-xs text-red-400 hover:text-red-300 border border-red-500/30 px-2 py-1 rounded hover:bg-red-500/10 transition flex-shrink-0">
+                {deleting === d.id ? "..." : "Delete"}
+              </button>
             </div>
           ))}
-        </>
+        </div>
+      )}
+      {docs.length === 0 && (
+        <p className="text-xs text-slate-600 text-center">No documents indexed yet</p>
       )}
     </div>
   );
 };
 
-// ── Chat Message ──────────────────────────────────────────────────────────────
-const Message = ({ msg, onFeedback }) => {
+// ── Chat message ──────────────────────────────────────────────────────────────
+const Message = ({ msg }) => {
   const isUser = msg.role === "user";
   const [rated, setRated] = useState(null);
+  const [ratingErr, setRatingErr] = useState(null);
 
   const handleFeedback = async (rating) => {
+    if (rated !== null) return;
     setRated(rating);
-    await api("/api/ai/feedback", "POST", { response_id: msg.response_id, rating });
+    try {
+      await api("/api/ai/feedback", "POST", { response_id: msg.response_id, rating });
+    } catch (e) {
+      setRatingErr("Failed to save");
+      setRated(null);
+    }
   };
 
   return (
     <div className={`slide-in flex flex-col ${isUser ? "items-end" : "items-start"} gap-1`}>
-      <div className={`max-w-[80%] rounded-2xl px-4 py-3 text-sm leading-relaxed
+      <div className={`max-w-[82%] rounded-2xl px-4 py-3 text-sm leading-relaxed
         ${isUser
           ? "bg-blue-600 text-white rounded-tr-sm"
           : "bg-slate-800 border border-slate-700/50 text-slate-200 rounded-tl-sm"}`}>
         {msg.content}
       </div>
 
+      {/* Message meta badges */}
+      {!isUser && (msg.cache_hit || msg.rag_used) && (
+        <div className="flex gap-1.5 px-1">
+          {msg.cache_hit && (
+            <span className="text-xs mono bg-slate-700/50 text-slate-400 px-2 py-0.5 rounded-full border border-slate-600/30">
+              💾 cached
+            </span>
+          )}
+          {msg.rag_used && (
+            <span className="text-xs mono bg-purple-900/40 text-purple-300 px-2 py-0.5 rounded-full border border-purple-500/30">
+              📚 RAG ×{msg.rag_chunks_count}
+            </span>
+          )}
+        </div>
+      )}
+
+      {/* Feedback buttons */}
       {!isUser && msg.response_id && (
-        <div className="flex gap-2 px-1">
+        <div className="flex items-center gap-2 px-1">
           <button onClick={() => handleFeedback(1)}
-            className={`text-lg transition-transform hover:scale-125 ${rated === 1 ? "opacity-100" : "opacity-30 hover:opacity-70"}`}
+            disabled={rated !== null}
+            className={`text-lg transition-transform hover:scale-125 disabled:cursor-default ${rated === 1 ? "opacity-100" : "opacity-30 hover:opacity-70"}`}
             title="Helpful">👍</button>
           <button onClick={() => handleFeedback(-1)}
-            className={`text-lg transition-transform hover:scale-125 ${rated === -1 ? "opacity-100" : "opacity-30 hover:opacity-70"}`}
+            disabled={rated !== null}
+            className={`text-lg transition-transform hover:scale-125 disabled:cursor-default ${rated === -1 ? "opacity-100" : "opacity-30 hover:opacity-70"}`}
             title="Not helpful">👎</button>
+          {ratingErr && <span className="text-xs text-red-400">{ratingErr}</span>}
         </div>
       )}
     </div>
   );
 };
 
-// ── Main App ──────────────────────────────────────────────────────────────────
+// ── Main app ──────────────────────────────────────────────────────────────────
 const App = () => {
-  const [messages, setMessages] = useState([
-    { role: "assistant", content: `Hello! I'm your ${APP_TITLE}. Ask me anything about your data.`, response_id: null }
-  ]);
-  const [input,   setInput]   = useState("");
-  const [loading, setLoading] = useState(false);
-  const [health,  setHealth]  = useState(null);
-  const [tab,     setTab]     = useState("chat");
+  const [messages, setMessages] = useState([{
+    role: "assistant",
+    content: `Hello! I'm your ${APP_TITLE}. Ask me anything about your data.`,
+    response_id: null,
+  }]);
+  const [input,      setInput]      = useState("");
+  const [loading,    setLoading]    = useState(false);
+  const [health,     setHealth]     = useState(null);
+  const [tab,        setTab]        = useState("chat");
+  const [ragEnabled, setRagEnabled] = useState(false);
+  const [useRag,     setUseRag]     = useState(false);
   const bottomRef = useRef(null);
 
+  // Load initial health + RAG state
   useEffect(() => {
     api("/health").then(setHealth).catch(() => setHealth({ status: "error", sarvam_connected: false }));
+    api("/api/rag/status").then(r => setRagEnabled(r.enabled)).catch(() => {});
   }, []);
 
   useEffect(() => {
     bottomRef.current?.scrollIntoView({ behavior: "smooth" });
   }, [messages, loading]);
 
+  const toggleRagGlobal = async () => {
+    try {
+      const res = await api("/api/rag/toggle", "POST");
+      setRagEnabled(res.enabled);
+      if (!res.enabled) setUseRag(false);
+    } catch (e) { console.error(e); }
+  };
+
   const sendMessage = async () => {
     if (!input.trim() || loading) return;
-    const userMsg = { role: "user", content: input };
-    setMessages(prev => [...prev, userMsg]);
+    const prompt = input.trim();
+    setMessages(prev => [...prev, { role: "user", content: prompt }]);
     setInput("");
     setLoading(true);
 
     try {
-      const data = await api("/api/ai/chat", "POST", { prompt: input, include_context: true });
+      const data = await api("/api/ai/chat", "POST", {
+        prompt,
+        include_context: true,
+        use_rag: useRag && ragEnabled,
+      });
       setMessages(prev => [...prev, {
-        role: "assistant",
-        content: data.response,
-        response_id: data.response_id
+        role:            "assistant",
+        content:         data.response,
+        response_id:     data.response_id,
+        cache_hit:       data.cache_hit,
+        rag_used:        data.rag_used,
+        rag_chunks_count: data.rag_chunks_count,
       }]);
     } catch (e) {
       setMessages(prev => [...prev, {
-        role: "assistant",
-        content: "⚠️ Error connecting to AI. Check server logs.",
-        response_id: null
+        role:        "assistant",
+        content:     `⚠️ Error: ${e.message}. Check server logs.`,
+        response_id: null,
       }]);
     } finally {
       setLoading(false);
     }
   };
 
-  const onKey = (e) => { if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); } };
+  const onKey = (e) => {
+    if (e.key === "Enter" && !e.shiftKey) { e.preventDefault(); sendMessage(); }
+  };
+
+  const QUICK_PROMPTS = [
+    "Show all offline devices",
+    "What alerts are active?",
+    "Summarize system status",
+    "Which devices are in warning state?",
+  ];
+
+  const TABS = [
+    { id: "chat", label: "💬 Chat" },
+    { id: "data", label: "📊 Data" },
+    { id: "rag",  label: "📚 RAG"  },
+  ];
 
   return (
     <div className="h-screen flex flex-col">
       {/* Header */}
-      <header className="bg-slate-900 border-b border-slate-700/50 px-6 py-3 flex items-center justify-between">
+      <header className="bg-slate-900 border-b border-slate-700/50 px-5 py-3 flex items-center justify-between flex-shrink-0">
         <div className="flex items-center gap-3">
           <div className="w-8 h-8 bg-blue-600 rounded-lg flex items-center justify-center text-sm font-bold">AI</div>
           <div>
             <h1 className="font-bold text-slate-100 text-sm">{APP_TITLE}</h1>
-            <p className="text-xs text-slate-500 mono">Powered by Sarvam AI</p>
+            <p className="text-xs text-slate-500 mono">Powered by Sarvam AI · v3</p>
           </div>
         </div>
-        {health && (
-          <div className="flex items-center gap-2">
-            <span className={`w-2 h-2 rounded-full ${health.sarvam_connected ? "bg-emerald-400 pulse" : "bg-red-400"}`}/>
-            <span className="text-xs text-slate-400 mono">{health.sarvam_connected ? "Sarvam Connected" : "Sarvam Offline"}</span>
-          </div>
-        )}
+        <div className="flex items-center gap-4">
+          {ragEnabled && (
+            <span className="text-xs mono bg-purple-900/40 text-purple-300 px-2.5 py-1 rounded-full border border-purple-500/30">
+              📚 RAG on
+            </span>
+          )}
+          {health && (
+            <div className="flex items-center gap-2">
+              <span className={`w-2 h-2 rounded-full ${health.sarvam_connected ? "bg-emerald-400 pulse" : "bg-red-400"}`}/>
+              <span className="text-xs text-slate-400 mono hidden sm:block">
+                {health.sarvam_connected ? "Sarvam connected" : "Sarvam offline"}
+              </span>
+            </div>
+          )}
+        </div>
       </header>
 
       {/* Body */}
       <div className="flex-1 flex overflow-hidden">
+
         {/* Sidebar */}
-        <aside className="w-80 bg-slate-900/50 border-r border-slate-700/40 p-4 hidden md:flex flex-col">
-          <div className="flex gap-2 mb-4">
-            {["chat", "data"].map(t => (
-              <button key={t} onClick={() => setTab(t)}
-                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold capitalize transition
-                  ${tab === t ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400 hover:text-slate-200"}`}>
-                {t === "chat" ? "💬 Chat" : "📊 Data"}
+        <aside className="w-72 bg-slate-900/50 border-r border-slate-700/40 p-3 hidden md:flex flex-col flex-shrink-0">
+          {/* Tab buttons */}
+          <div className="flex gap-1.5 mb-3">
+            {TABS.map(t => (
+              <button key={t.id} onClick={() => setTab(t.id)}
+                className={`flex-1 py-1.5 rounded-lg text-xs font-semibold transition
+                  ${tab === t.id ? "bg-blue-600 text-white" : "bg-slate-800 text-slate-400 hover:text-slate-200"}`}>
+                {t.label}
               </button>
             ))}
           </div>
-          {tab === "data" ? <EntityPanel /> : (
-            <div className="text-xs text-slate-500 space-y-2 mono">
-              <p className="text-slate-400 font-semibold">Quick prompts:</p>
-              {[
-                "Show all offline devices",
-                "What alerts are active?",
-                "Which sensors are in Zone A?",
-                "Summarize current system status",
-              ].map(q => (
-                <button key={q} onClick={() => setInput(q)}
-                  className="w-full text-left px-3 py-2 bg-slate-800/60 hover:bg-slate-700/60
-                    border border-slate-700/40 rounded-lg text-slate-300 hover:text-white transition">
-                  {q}
-                </button>
-              ))}
-            </div>
-          )}
+
+          <div className="flex-1 overflow-y-auto min-h-0">
+            {tab === "data" && <DataPanel/>}
+            {tab === "rag"  && <RagPanel ragEnabled={ragEnabled} onToggle={toggleRagGlobal}/>}
+            {tab === "chat" && (
+              <div className="text-xs text-slate-500 space-y-2 mono">
+                <p className="text-slate-400 font-semibold">Quick prompts:</p>
+                {QUICK_PROMPTS.map(q => (
+                  <button key={q} onClick={() => setInput(q)}
+                    className="w-full text-left px-3 py-2 bg-slate-800/60 hover:bg-slate-700/60 border border-slate-700/40 rounded-lg text-slate-300 hover:text-white transition text-xs">
+                    {q}
+                  </button>
+                ))}
+              </div>
+            )}
+          </div>
         </aside>
 
         {/* Chat area */}
-        <main className="flex-1 flex flex-col bg-slate-900/30">
-          <div className="flex-1 overflow-y-auto p-6 space-y-4">
-            {messages.map((msg, i) => <Message key={i} msg={msg} />)}
+        <main className="flex-1 flex flex-col bg-slate-900/30 min-w-0">
+          {/* Messages */}
+          <div className="flex-1 overflow-y-auto p-5 space-y-4">
+            {messages.map((msg, i) => <Message key={i} msg={msg}/>)}
             {loading && (
-              <div className="flex items-start gap-2 slide-in">
+              <div className="flex items-start slide-in">
                 <div className="bg-slate-800 border border-slate-700/50 rounded-2xl rounded-tl-sm px-4 py-3">
                   <div className="flex gap-1">
                     {[0,1,2].map(i => (
                       <span key={i} className="w-2 h-2 bg-blue-400 rounded-full pulse"
-                        style={{ animationDelay: `${i * 0.2}s` }} />
+                        style={{ animationDelay: `${i * 0.2}s` }}/>
                     ))}
                   </div>
                 </div>
               </div>
             )}
-            <div ref={bottomRef} />
+            <div ref={bottomRef}/>
           </div>
 
-          {/* Input */}
-          <div className="p-4 border-t border-slate-700/40 bg-slate-900/60">
+          {/* Input bar */}
+          <div className="p-4 border-t border-slate-700/40 bg-slate-900/60 flex-shrink-0">
+            {/* RAG per-message toggle */}
+            <div className="flex items-center gap-2 mb-2">
+              <button
+                onClick={() => ragEnabled && setUseRag(u => !u)}
+                disabled={!ragEnabled}
+                title={ragEnabled ? "Toggle RAG for this message" : "Enable RAG globally in the RAG tab first"}
+                className={`flex items-center gap-1.5 text-xs px-3 py-1.5 rounded-lg border transition font-semibold mono
+                  ${!ragEnabled
+                    ? "border-slate-700/30 text-slate-600 cursor-not-allowed"
+                    : useRag
+                      ? "border-purple-500/60 bg-purple-900/30 text-purple-300"
+                      : "border-slate-600/40 text-slate-500 hover:border-slate-500 hover:text-slate-400"}`}>
+                📚 {useRag && ragEnabled ? "RAG on" : "RAG off"}
+              </button>
+              <span className="text-xs text-slate-600">
+                {!ragEnabled
+                  ? "Enable RAG in sidebar →"
+                  : useRag
+                    ? "Knowledge base will be searched"
+                    : "Click to include knowledge base"}
+              </span>
+            </div>
+
             <div className="flex gap-3 items-end">
               <textarea
                 rows={2}
-                className="flex-1 bg-slate-800 border border-slate-700/50 rounded-xl px-4 py-3
-                  text-sm text-slate-200 placeholder-slate-500 resize-none focus:outline-none
-                  focus:border-blue-500/70 transition"
-                placeholder="Ask anything... (Enter to send)"
+                className="flex-1 bg-slate-800 border border-slate-700/50 rounded-xl px-4 py-3 text-sm text-slate-200 placeholder-slate-500 resize-none focus:border-blue-500/60 transition"
+                placeholder="Ask anything… (Enter to send, Shift+Enter for newline)"
                 value={input}
                 onChange={e => setInput(e.target.value)}
                 onKeyDown={onKey}
               />
-              <button onClick={sendMessage} disabled={loading || !input.trim()}
-                className="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed
-                  text-white rounded-xl px-5 py-3 text-sm font-semibold transition whitespace-nowrap">
-                {loading ? "..." : "Send →"}
+              <button
+                onClick={sendMessage}
+                disabled={loading || !input.trim()}
+                className="bg-blue-600 hover:bg-blue-500 disabled:bg-slate-700 disabled:cursor-not-allowed text-white rounded-xl px-5 py-3 text-sm font-semibold transition whitespace-nowrap">
+                {loading ? "···" : "Send →"}
               </button>
             </div>
-            <p className="text-xs text-slate-600 mt-2 mono text-center">
-              Rate AI responses with 👍 👎 to improve accuracy
+
+            <p className="text-xs text-slate-600 mt-2 text-center mono">
+              Rate AI responses with 👍 👎 · RAG adds domain knowledge context
             </p>
           </div>
         </main>
@@ -283,7 +513,7 @@ const App = () => {
   );
 };
 
-ReactDOM.createRoot(document.getElementById("root")).render(<App />);
+ReactDOM.createRoot(document.getElementById("root")).render(<App/>);
 </script>
 </body>
 </html>

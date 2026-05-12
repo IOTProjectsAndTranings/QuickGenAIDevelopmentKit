@@ -117,3 +117,52 @@ Content-Type: application/json
     {"role": "user", "content": "Hello, what can you do?"}
   ]
 }
+
+### ── RAG Endpoints ──────────────────────────────────────────────────────────
+
+### RAG Status
+GET {{BASE}}/api/rag/status
+X-API-Key: {{API_KEY}}
+
+###
+
+### Toggle RAG on/off
+POST {{BASE}}/api/rag/toggle
+X-API-Key: {{API_KEY}}
+
+###
+
+### Upload a document
+POST {{BASE}}/api/rag/upload
+X-API-Key: {{API_KEY}}
+Content-Type: application/json
+
+{
+  "name": "IoT Troubleshooting Guide",
+  "content": "When a device goes offline, first check the network connection. For MQTT devices, verify the broker is running and the client ID is unique. For CoAP devices, check the UDP port 5683 is open. For LwM2M devices, ensure the bootstrap server is reachable. Common issues include: firewall blocking ports, expired certificates, and duplicate client IDs causing disconnections."
+}
+
+###
+
+### List RAG documents
+GET {{BASE}}/api/rag/documents
+X-API-Key: {{API_KEY}}
+
+###
+
+### Delete a RAG document
+DELETE {{BASE}}/api/rag/documents/REPLACE_WITH_DOC_ID
+X-API-Key: {{API_KEY}}
+
+###
+
+### Chat WITH RAG enabled
+POST {{BASE}}/api/ai/chat
+X-API-Key: {{API_KEY}}
+Content-Type: application/json
+
+{
+  "prompt": "How do I fix an offline MQTT device?",
+  "include_context": true,
+  "use_rag": true
+}
